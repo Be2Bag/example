@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	"github.com/Be2Bag/example/model"
@@ -38,6 +39,9 @@ func (repository *RegisterRepository) GetUserByEmail(email string) (*model.User,
 	var user model.User
 	err := repository.collection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
 	if err != nil {
+		if errors.Is(err, mongo.ErrNoDocuments) {
+			return nil, nil
+		}
 		return nil, err
 	}
 	return &user, nil

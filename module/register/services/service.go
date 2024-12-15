@@ -6,7 +6,7 @@ import (
 	"github.com/Be2Bag/example/model"
 	"github.com/Be2Bag/example/module/register/dto"
 	"github.com/Be2Bag/example/module/register/ports"
-	"golang.org/x/crypto/bcrypt"
+	"github.com/Be2Bag/example/pkg/util"
 )
 
 var ErrUserAlreadyExists = errors.New("ผู้ใช้มีอยู่แล้ว")
@@ -32,7 +32,9 @@ func (service *RegisterService) Register(req dto.RegisterRequest) (dto.RegisterR
 	}
 
 	// แฮชพาสเวิร์ดของผู้ใช้
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	// hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	hashedPassword := util.HasPwHelper(req.Password)
+
 	if err != nil {
 		return dto.RegisterResponse{}, err
 	}
@@ -41,7 +43,7 @@ func (service *RegisterService) Register(req dto.RegisterRequest) (dto.RegisterR
 	user := &model.User{
 		Username: req.Username,
 		Email:    req.Email,
-		Password: string(hashedPassword),
+		Password: hashedPassword,
 	}
 
 	// บันทึกผู้ใช้ลงในฐานข้อมูล

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log"
 
 	"github.com/Be2Bag/example/module/register/dto"
 	"github.com/Be2Bag/example/module/register/ports"
@@ -42,6 +43,7 @@ func (h *RegisterHandler) Register(c *fiber.Ctx) error {
 
 	resp, err := h.registerService.Register(req)
 	if err != nil {
+		log.Println("error: ", err)
 		if errors.Is(err, services.ErrUserAlreadyExists) {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 				"error": "ผู้ใช้มีอยู่แล้ว",
