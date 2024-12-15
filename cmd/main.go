@@ -7,58 +7,59 @@ import (
 
 	"github.com/Be2Bag/example/config"
 	"github.com/Be2Bag/example/module/register/handler"
+	"github.com/Be2Bag/example/module/register/ports"
 	"github.com/Be2Bag/example/module/register/repository"
 	"github.com/Be2Bag/example/module/register/services"
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
-
-	"github.com/go-playground/validator/v10"
 )
 
-// CustomValidator implements fiber's Validator interface
-type CustomValidator struct {
-    validator *validator.Validate
+// setupEnvironment ตั้งค่าการโหลด environment variables
+func setupEnvironment() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file: %v", err)
+	}
 }
 
-func (cv *CustomValidator) Validate(i interface{}) error {
-    return cv.validator.Struct(i)
+// setupMiddleware ตั้งค่า middleware สำหรับแอป Fiber
+func setupMiddleware(app *fiber.App) {
+	app.Use(recover.New()) // ใช้ middleware สำหรับจัดการข้อผิดพลาด
+	app.Use(logger.New())  // ใช้ middleware สำหรับล็อกคำขอ
+}
+
+// setupRoutes ตั้งค่าเส้นทางสำหรับแอป Fiber
+func setupRoutes(app *fiber.App, registerHandler *handler.RegisterHandler) {
+	api := app.Group("/api")
+	api.Post("/register", registerHandler.Register) // เส้นทางสำหรับลงทะเบียนผู้ใช้
 }
 
 func main() {
-    // Load environment variables
-    err := godotenv.Load()
-    if err != nil {
-        log.Println("No .env file found")
-    }
+	setupEnvironment()    // ตั้งค่าการโหลด environment
+	config.InitDatabase() // เริ่มต้นการเชื่อมต่อฐานข้อมูล
 
-    // Initialize database
-    config.InitDatabase()
+	app := fiber.New()
+	setupMiddleware(app) // ตั้งค่า middleware
 
-    // Initialize Fiber app with custom validator
-    app := fiber.New(fiber.Config{
-        Validator: &CustomValidator{validator: validator.New()},
-    })
+	v := validator.New() // สร้าง validator ใหม่
 
-    // Middleware
-    app.Use(recover.New())
-    app.Use(logger.New())
+	// ตั้งค่า repository และ service สำหรับการลงทะเบียน
+	var registerRepo ports.RegisterRepository = repository.NewRegisterRepository(config.DB)
+	var registerService ports.RegisterService = services.NewRegisterService(registerRepo)
+	registerHandler := handler.NewRegisterHandler(registerService, v)
 
-    // Setup Register module
-    registerRepo := repository.NewRegisterRepository(config.DB)
-    registerService := services.NewRegisterService(registerRepo)
-    registerHandler := handler.NewRegisterHandler(registerService)
+	setupRoutes(app, registerHandler) // ตั้งค่าเส้นทาง
 
-    // Routes
-    api := app.Group("/api")
-    api.Post("/register", registerHandler.Register)
-
-    // Start server
-    port := os.Getenv("PORT")
-    if port == "" {
-        port = "3000"
-    }
-    log.Printf("Server is running on port %s", port)
-    log.Fatal(app.Listen(":" + port))
+	// กำหนดพอร์ตที่เซิร์ฟเวอร์จะรัน
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "3000"
+	}
+	log.Printf("Server is running on port %s", port)
+	if err := app.Listen(":" + port); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 }

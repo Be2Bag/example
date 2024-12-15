@@ -1,0 +1,14 @@
+# Configuration for auto-reloading with air
+
+[build]
+  cmd = "go build -o tmp/main.exe ./cmd/main.go"
+  bin = "tmp/main.exe"
+  include_ext = ["go", "tpl", "tmpl", "html"]
+  exclude_dir = ["assets", "tmp", "vendor"]
+
+[watch]
+  dirs = ["cmd"]
+  exclude_dir = ["assets", "tmp", "vendor"]
+
+[log]
+  time = true

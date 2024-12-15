@@ -1,0 +1,44 @@
+package repository
+
+import (
+	"context"
+	"time"
+
+	"github.com/Be2Bag/example/model"
+	"github.com/Be2Bag/example/module/register/ports"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+)
+
+// RegisterRepository คือที่เก็บข้อมูลสำหรับการลงทะเบียนผู้ใช้
+type RegisterRepository struct {
+	collection *mongo.Collection
+}
+
+// NewRegisterRepository สร้างที่เก็บข้อมูลใหม่
+func NewRegisterRepository(db *mongo.Database) ports.RegisterRepository {
+	collection := db.Collection("users")
+	return &RegisterRepository{
+		collection: collection,
+	}
+}
+
+// CreateUser สร้างผู้ใช้ใหม่ในฐานข้อมูล
+func (repository *RegisterRepository) CreateUser(user *model.User) error {
+	user.ID = primitive.NewObjectID()
+	user.CreatedAt = time.Now()
+	user.UpdatedAt = time.Now()
+	_, err := repository.collection.InsertOne(context.TODO(), user)
+	return err
+}
+
+// GetUserByEmail ดึงข้อมูลผู้ใช้ตามอีเมล
+func (repository *RegisterRepository) GetUserByEmail(email string) (*model.User, error) {
+	var user model.User
+	err := repository.collection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

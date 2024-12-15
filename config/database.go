@@ -1,37 +1,44 @@
-// config/database.go
 package config
 
 import (
-	"fmt"
+	"context"
 	"log"
 	"os"
 
-	"github.com/Be2Bag/example/model"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-var DB *gorm.DB
+var DB *mongo.Database
 
+// ConnectDatabase เชื่อมต่อกับฐานข้อมูล MongoDB
+func ConnectDatabase() (*mongo.Database, error) {
+	// โหลดไฟล์ .env
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+
+	uri := os.Getenv("DB_URI") // รับ URI ของฐานข้อมูลจาก environment
+	clientOptions := options.Client().ApplyURI(uri)
+
+	client, err := mongo.Connect(context.TODO(), clientOptions)
+	if err != nil {
+		return nil, err
+	}
+
+	database := client.Database(os.Getenv("DB_NAME")) // เลือกฐานข้อมูล
+	return database, nil
+}
+
+// InitDatabase เริ่มต้นการเชื่อมต่อฐานข้อมูล
 func InitDatabase() {
-    dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-        os.Getenv("DB_USER"),
-        os.Getenv("DB_PASSWORD"),
-        os.Getenv("DB_HOST"),
-        os.Getenv("DB_NAME"),
-    )
+	var err error
+	DB, err = ConnectDatabase()
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
+	}
 
-    var err error
-    DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-    if err != nil {
-        log.Fatalf("Failed to connect to database: %v", err)
-    }
-
-    // Auto migrate User model
-    err = DB.AutoMigrate(&model.User{})
-    if err != nil {
-        log.Fatalf("Failed to migrate database: %v", err)
-    }
-
-    log.Println("Database connection established and migrated.")
+	log.Println("Database connection to MongoDB established.")
 }
