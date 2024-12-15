@@ -1,3 +1,4 @@
+```
 GO-EXAMPLE/
 ├── app/                    # เริ่มการทำงานของแอปพลิเคชัน
 ├── cmd/                    # Entry points ของแอปพลิเคชัน
@@ -13,3 +14,4 @@ GO-EXAMPLE/
 │       ├── ports/          # Interfaces ของบริการที่ต้องใช้ในโมดูลนี้
 │       └── services/       # Business logic ของโมดูล register
 └── pkg/                    # Utilities, helper functions, และ library ที่ใช้ร่วมกัน
+```
