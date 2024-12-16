@@ -32,7 +32,6 @@ func (service *RegisterService) Register(req dto.RegisterRequest) (dto.RegisterR
 	}
 
 	// แฮชพาสเวิร์ดของผู้ใช้
-	// hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	hashedPassword := util.HasPwHelper(req.Password)
 
 	if err != nil {
