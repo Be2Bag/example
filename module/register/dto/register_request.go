@@ -8,3 +8,11 @@ type RegisterRequest struct {
 	FirstName string `json:"first_name" validate:"required"`               // ชื่อจริง
 	LastName  string `json:"last_name" validate:"required"`                // นามสกุล
 }
+
+type UpdateUserRequest struct {
+	UserID    string `json:"user_id" validate:"required"`               // รหัสผู้ใช้
+	Username  string `json:"username" validate:"required,min=3,max=32"` // ชื่อผู้ใช้
+	Email     string `json:"email" validate:"required,email"`           // อีเมล
+	FirstName string `json:"first_name" validate:"required"`            // ชื่อจริง
+	LastName  string `json:"last_name" validate:"required"`             // นามสกุล
+}

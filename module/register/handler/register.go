@@ -69,3 +69,70 @@ func (h *RegisterHandler) GetUser(c *fiber.Ctx) error {
 
 	return c.JSON(resp)
 }
+
+func (h *RegisterHandler) GetUserByID(c *fiber.Ctx) error {
+	id := c.Params("id")
+	resp, err := h.registerService.GetUserByID(id)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "ไม่พบผู้ใช้ตาม ID ที่ระบุ",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์",
+			"details": err.Error(),
+		})
+	}
+
+	return c.JSON(resp)
+}
+
+func (h *RegisterHandler) UpdateUser(c *fiber.Ctx) error {
+	var req dto.UpdateUserRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "ข้อมูลคำขอไม่ถูกต้อง",
+		})
+	}
+
+	if err := h.validator.Struct(req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   "การตรวจสอบล้มเหลว",
+			"details": err.Error(),
+		})
+	}
+
+	resp, err := h.registerService.UpdateUser(req)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "ไม่พบผู้ใช้ตาม ID ที่ระบุ",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์",
+			"details": err.Error(),
+		})
+	}
+
+	return c.JSON(resp)
+}
+
+func (h *RegisterHandler) DeleteUser(c *fiber.Ctx) error {
+	id := c.Params("id")
+	err := h.registerService.DeleteUser(id)
+	if err != nil {
+		if errors.Is(err, services.ErrUserNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "ไม่พบผู้ใช้ตาม ID ที่ระบุ",
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":   "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์",
+			"details": err.Error(),
+		})
+	}
+
+	return c.SendStatus(fiber.StatusNoContent)
+}
