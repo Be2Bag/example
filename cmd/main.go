@@ -34,6 +34,7 @@ func setupMiddleware(app *fiber.App) {
 // setupRoutes ตั้งค่าเส้นทางสำหรับแอป Fiber
 func setupRoutes(app *fiber.App, registerHandler *handler.RegisterHandler) {
 	api := app.Group("/api")
+	api.Get("/register", registerHandler.GetUser)   // เส้นทางสำหรับแสดงผู้ใช้
 	api.Post("/register", registerHandler.Register) // เส้นทางสำหรับลงทะเบียนผู้ใช้
 }
 

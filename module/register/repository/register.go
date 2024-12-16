@@ -46,3 +46,24 @@ func (repository *RegisterRepository) GetUserByEmail(email string) (*model.User,
 	}
 	return &user, nil
 }
+
+func (repository *RegisterRepository) GetUsers() ([]*model.User, error) {
+	cursor, err := repository.collection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(context.TODO())
+
+	var users []*model.User
+	for cursor.Next(context.TODO()) {
+		var user model.User
+		if err := cursor.Decode(&user); err != nil {
+			return nil, err
+		}
+		users = append(users, &user)
+	}
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+	return users, nil
+}
