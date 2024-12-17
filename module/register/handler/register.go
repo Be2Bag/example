@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 
+	"github.com/Be2Bag/example/module/common"
 	"github.com/Be2Bag/example/module/register/dto"
 	"github.com/Be2Bag/example/module/register/ports"
 	"github.com/Be2Bag/example/module/register/services"
@@ -37,42 +38,31 @@ func (h *RegisterHandler) SetupRoutes(router fiber.Router) {
 func (h *RegisterHandler) Register(c *fiber.Ctx) error {
 	var req dto.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "ข้อมูลคำขอไม่ถูกต้อง",
-		})
+		return common.SendErrorResponse(c, fiber.StatusBadRequest, "ข้อมูลคำขอไม่ถูกต้อง", nil)
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "การตรวจสอบล้มเหลว",
-			"details": err.Error(),
-		})
+		return common.SendErrorResponse(c, fiber.StatusBadRequest, "การตรวจสอบล้มเหลว", err.Error())
 	}
 
 	resp, err := h.registerService.Register(req)
 	if err != nil {
 		if errors.Is(err, services.ErrUserAlreadyExists) {
-			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-				"error": "ผู้ใช้มีอยู่แล้ว",
-			})
+			return common.SendErrorResponse(c, fiber.StatusConflict, "ผู้ใช้มีอยู่แล้ว", nil)
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์",
-		})
+		return common.SendErrorResponse(c, fiber.StatusInternalServerError, "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์", nil)
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(resp)
+	return common.SendSuccessResponse(c, fiber.StatusCreated, "ลงทะเบียนสำเร็จ", resp)
 }
 
 func (h *RegisterHandler) GetUser(c *fiber.Ctx) error {
 	resp, err := h.registerService.GetUsers()
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์",
-		})
+		return common.SendErrorResponse(c, fiber.StatusInternalServerError, "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์", nil)
 	}
 
-	return c.JSON(resp)
+	return common.SendSuccessResponse(c, fiber.StatusOK, "ดึงข้อมูลผู้ใช้สำเร็จ", resp)
 }
 
 func (h *RegisterHandler) GetUserByID(c *fiber.Ctx) error {
@@ -80,48 +70,33 @@ func (h *RegisterHandler) GetUserByID(c *fiber.Ctx) error {
 	resp, err := h.registerService.GetUserByID(id)
 	if err != nil {
 		if errors.Is(err, services.ErrUserNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error": "ไม่พบผู้ใช้ตาม ID ที่ระบุ",
-			})
+			return common.SendErrorResponse(c, fiber.StatusNotFound, "ไม่พบผู้ใช้ตาม ID ที่ระบุ", nil)
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์",
-			"details": err.Error(),
-		})
+		return common.SendErrorResponse(c, fiber.StatusInternalServerError, "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์", err.Error())
 	}
 
-	return c.JSON(resp)
+	return common.SendSuccessResponse(c, fiber.StatusOK, "ดึงข้อมูลผู้ใช้สำเร็จ", resp)
 }
 
 func (h *RegisterHandler) UpdateUser(c *fiber.Ctx) error {
 	var req dto.UpdateUserRequest
 	if err := c.BodyParser(&req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "ข้อมูลคำขอไม่ถูกต้อง",
-		})
+		return common.SendErrorResponse(c, fiber.StatusBadRequest, "ข้อมูลคำขอไม่ถูกต้อง", nil)
 	}
 
 	if err := h.validator.Struct(req); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error":   "การตรวจสอบล้มเหลว",
-			"details": err.Error(),
-		})
+		return common.SendErrorResponse(c, fiber.StatusBadRequest, "การตรวจสอบล้มเหลว", err.Error())
 	}
 
 	resp, err := h.registerService.UpdateUser(req)
 	if err != nil {
 		if errors.Is(err, services.ErrUserNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error": "ไม่พบผู้ใช้ตาม ID ที่ระบุ",
-			})
+			return common.SendErrorResponse(c, fiber.StatusNotFound, "ไม่พบผู้ใช้ตาม ID ที่ระบุ", nil)
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์",
-			"details": err.Error(),
-		})
+		return common.SendErrorResponse(c, fiber.StatusInternalServerError, "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์", err.Error())
 	}
 
-	return c.JSON(resp)
+	return common.SendSuccessResponse(c, fiber.StatusOK, "อัปเดตผู้ใช้สำเร็จ", resp)
 }
 
 func (h *RegisterHandler) DeleteUser(c *fiber.Ctx) error {
@@ -129,15 +104,10 @@ func (h *RegisterHandler) DeleteUser(c *fiber.Ctx) error {
 	err := h.registerService.DeleteUser(id)
 	if err != nil {
 		if errors.Is(err, services.ErrUserNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-				"error": "ไม่พบผู้ใช้ตาม ID ที่ระบุ",
-			})
+			return common.SendErrorResponse(c, fiber.StatusNotFound, "ไม่พบผู้ใช้ตาม ID ที่ระบุ", nil)
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์",
-			"details": err.Error(),
-		})
+		return common.SendErrorResponse(c, fiber.StatusInternalServerError, "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์", err.Error())
 	}
 
-	return c.SendStatus(fiber.StatusNoContent)
+	return common.SendSuccessResponse(c, fiber.StatusNoContent, "ลบผู้ใช้สำเร็จ", nil)
 }

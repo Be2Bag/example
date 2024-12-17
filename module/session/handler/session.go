@@ -4,8 +4,9 @@ import (
 	"errors"
 	"time"
 
+	"github.com/Be2Bag/example/middleware"
+	"github.com/Be2Bag/example/module/common"
 	"github.com/Be2Bag/example/module/session/dto"
-	"github.com/Be2Bag/example/module/session/middleware"
 	"github.com/Be2Bag/example/module/session/ports"
 	"github.com/Be2Bag/example/module/session/services"
 	"github.com/go-playground/validator/v10"
@@ -30,33 +31,24 @@ func (h *SessionHandler) SetupRoutes(router fiber.Router) {
 	session.Post("/login", h.Login)
 
 	protected := router.Group("/session", middleware.AuthMiddleware)
-	protected.Get("/", h.Test)
+	protected.Get("/", h.Session)
 }
 
 func (h *SessionHandler) Login(c *fiber.Ctx) error {
 	var sessionRequest dto.SessionRequest
 	if err := c.BodyParser(&sessionRequest); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return common.SendErrorResponse(c, fiber.StatusBadRequest, err.Error(), nil)
 	}
 
 	token, err := h.sessionService.Login(sessionRequest)
 	if err != nil {
 		if errors.Is(err, services.ErrInvalidEmail) {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"message": "อีเมล์ไม่ถูกต้อง",
-			})
+			return common.SendErrorResponse(c, fiber.StatusUnauthorized, "อีเมล์ไม่ถูกต้อง", nil)
 		}
 		if errors.Is(err, services.ErrInvalidPassword) {
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"message": "รหัสผ่านไม่ถูกต้อง",
-			})
+			return common.SendErrorResponse(c, fiber.StatusUnauthorized, "รหัสผ่านไม่ถูกต้อง", nil)
 		}
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error":   "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์",
-			"details": err.Error(),
-		})
+		return common.SendErrorResponse(c, fiber.StatusInternalServerError, "เกิดข้อผิดพลาดภายในเซิร์ฟเวอร์", err.Error())
 	}
 
 	c.Cookie(&fiber.Cookie{
@@ -77,16 +69,10 @@ func (h *SessionHandler) Login(c *fiber.Ctx) error {
 	cookie.SameSite = "Strict"
 	c.Cookie(cookie)
 
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Login successful",
-	})
+	return common.SendSuccessResponse(c, fiber.StatusOK, "Login successful", nil)
 }
 
-func (h *SessionHandler) Test(c *fiber.Ctx) error {
+func (h *SessionHandler) Session(c *fiber.Ctx) error {
 	auth := c.Locals("auth").(map[string]interface{})
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": "Session successful",
-		"user":    auth,
-	})
+	return common.SendSuccessResponse(c, fiber.StatusOK, "Session successful", auth)
 }
