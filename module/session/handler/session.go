@@ -59,10 +59,22 @@ func (h *SessionHandler) Login(c *fiber.Ctx) error {
 		})
 	}
 
+	c.Cookie(&fiber.Cookie{
+		Name:     "token",
+		Value:    "",
+		MaxAge:   -1,
+		HTTPOnly: true,
+		Secure:   true,
+		SameSite: "Strict",
+	})
+
 	cookie := new(fiber.Cookie)
 	cookie.Name = "token"
 	cookie.Value = token
 	cookie.Expires = time.Now().Add(24 * time.Hour)
+	cookie.HTTPOnly = true
+	cookie.Secure = true
+	cookie.SameSite = "Strict"
 	c.Cookie(cookie)
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
