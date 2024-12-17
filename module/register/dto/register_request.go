@@ -1,18 +1,17 @@
 package dto
 
-// RegisterRequest คือโครงสร้างข้อมูลคำขอลงทะเบียนผู้ใช้ใหม่
 type RegisterRequest struct {
-	Username  string `json:"username" validate:"required,min=3,max=32"`    // ชื่อผู้ใช้
-	Email     string `json:"email" validate:"required,email"`              // อีเมล
-	Password  string `json:"password" validate:"required,min=8,datavalid"` // รหัสผ่าน
-	FirstName string `json:"first_name" validate:"required"`               // ชื่อจริง
-	LastName  string `json:"last_name" validate:"required"`                // นามสกุล
+	Username  string `json:"username" validate:"required,min=3,max=32"`
+	Email     string `json:"email" validate:"required,email"`
+	Password  string `json:"password" validate:"required,min=8,datavalid"`
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name" validate:"required"`
 }
 
 type UpdateUserRequest struct {
-	UserID    string `json:"user_id" validate:"required"`               // รหัสผู้ใช้
-	Username  string `json:"username" validate:"required,min=3,max=32"` // ชื่อผู้ใช้
-	Email     string `json:"email" validate:"required,email"`           // อีเมล
-	FirstName string `json:"first_name" validate:"required"`            // ชื่อจริง
-	LastName  string `json:"last_name" validate:"required"`             // นามสกุล
+	UserID    string `json:"user_id" validate:"required"`
+	Username  string `json:"username" validate:"required,min=3,max=32"`
+	Email     string `json:"email" validate:"required,email"`
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name" validate:"required"`
 }

@@ -6,10 +6,14 @@ import (
 	"os"
 
 	"github.com/Be2Bag/example/config"
-	"github.com/Be2Bag/example/module/register/handler"
-	"github.com/Be2Bag/example/module/register/ports"
-	"github.com/Be2Bag/example/module/register/repository"
-	"github.com/Be2Bag/example/module/register/services"
+	registerHandler "github.com/Be2Bag/example/module/register/handler"
+	registerPorts "github.com/Be2Bag/example/module/register/ports"
+	registerRepository "github.com/Be2Bag/example/module/register/repository"
+	registerServices "github.com/Be2Bag/example/module/register/services"
+	sessionHandler "github.com/Be2Bag/example/module/session/handler"
+	sessionPorts "github.com/Be2Bag/example/module/session/ports"
+	sessionRepository "github.com/Be2Bag/example/module/session/repository"
+	sessionServices "github.com/Be2Bag/example/module/session/services"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -17,7 +21,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// setupEnvironment ตั้งค่าการโหลด environment variables
 func setupEnvironment() {
 	err := godotenv.Load()
 	if err != nil {
@@ -25,39 +28,35 @@ func setupEnvironment() {
 	}
 }
 
-// setupMiddleware ตั้งค่า middleware สำหรับแอป Fiber
 func setupMiddleware(app *fiber.App) {
-	app.Use(recover.New()) // ใช้ middleware สำหรับจัดการข้อผิดพลาด
-	app.Use(logger.New())  // ใช้ middleware สำหรับล็อกคำขอ
-}
-
-// setupRoutes ตั้งค่าเส้นทางสำหรับแอป Fiber
-func setupRoutes(app *fiber.App, registerHandler *handler.RegisterHandler) {
-	api := app.Group("/api")
-	api.Get("/register", registerHandler.GetUser)           // เส้นทางสำหรับแสดงผู้ใช้
-	api.Get("/register/:id", registerHandler.GetUserByID)   // เส้นทางสำหรับแสดงผู้ใช้โดยใช้รหัสผู้ใช้
-	api.Post("/register", registerHandler.Register)         // เส้นทางสำหรับลงทะเบียนผู้ใช้
-	api.Put("/register", registerHandler.UpdateUser)        // เส้นทางสำหรับอัปเดตข้อมูลผู้ใช้
-	api.Delete("/register/:id", registerHandler.DeleteUser) // เส้นทางสำหรับลบผู้ใช้
+	app.Use(recover.New())
+	app.Use(logger.New())
 }
 
 func main() {
-	setupEnvironment()    // ตั้งค่าการโหลด environment
-	config.InitDatabase() // เริ่มต้นการเชื่อมต่อฐานข้อมูล
+	setupEnvironment()
+	config.InitDatabase()
 
 	app := fiber.New()
-	setupMiddleware(app) // ตั้งค่า middleware
+	setupMiddleware(app)
 
-	v := validator.New() // สร้าง validator ใหม่
+	apiGroup := app.Group("/api")
 
-	// ตั้งค่า repository และ service สำหรับการลงทะเบียน
-	var registerRepo ports.RegisterRepository = repository.NewRegisterRepository(config.DB)
-	var registerService ports.RegisterService = services.NewRegisterService(registerRepo)
-	registerHandler := handler.NewRegisterHandler(registerService, v)
+	v := validator.New()
 
-	setupRoutes(app, registerHandler) // ตั้งค่าเส้นทาง
+	sharedRepo := registerRepository.NewRegisterRepository(config.DB, nil)
 
-	// กำหนดพอร์ตที่เซิร์ฟเวอร์จะรัน
+	var registerRepo registerPorts.RegisterRepository = registerRepository.NewRegisterRepository(config.DB, sharedRepo)
+	var registerService registerPorts.RegisterService = registerServices.NewRegisterService(registerRepo)
+	registerHandler := registerHandler.NewRegisterHandler(registerService, v)
+
+	var sessionRepo sessionPorts.SessionRepository = sessionRepository.NewSessionRepository(config.DB, sharedRepo)
+	var sessionService sessionPorts.SessionService = sessionServices.NewSessionService(sessionRepo)
+	sessionHandler := sessionHandler.NewSessionHandler(sessionService, v)
+
+	registerHandler.SetupRoutes(apiGroup)
+	sessionHandler.SetupRoutes(apiGroup)
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3000"

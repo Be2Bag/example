@@ -12,15 +12,13 @@ import (
 
 var DB *mongo.Database
 
-// ConnectDatabase เชื่อมต่อกับฐานข้อมูล MongoDB
 func ConnectDatabase() (*mongo.Database, error) {
-	// โหลดไฟล์ .env
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatalf("Error loading .env file")
 	}
 
-	uri := os.Getenv("DB_URI") // รับ URI ของฐานข้อมูลจาก environment
+	uri := os.Getenv("DB_URI")
 	clientOptions := options.Client().ApplyURI(uri)
 
 	client, err := mongo.Connect(context.TODO(), clientOptions)
@@ -28,11 +26,10 @@ func ConnectDatabase() (*mongo.Database, error) {
 		return nil, err
 	}
 
-	database := client.Database(os.Getenv("DB_NAME")) // เลือกฐานข้อมูล
+	database := client.Database(os.Getenv("DB_NAME"))
 	return database, nil
 }
 
-// InitDatabase เริ่มต้นการเชื่อมต่อฐานข้อมูล
 func InitDatabase() {
 	var err error
 	DB, err = ConnectDatabase()

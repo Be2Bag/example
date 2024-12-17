@@ -11,15 +11,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// RegisterHandler คือฮันเดิลสำหรับการลงทะเบียนผู้ใช้
 type RegisterHandler struct {
 	registerService ports.RegisterService
 	validator       *validator.Validate
 }
 
-// NewRegisterHandler สร้าง RegisterHandler ใหม่
 func NewRegisterHandler(registerService ports.RegisterService, v *validator.Validate) *RegisterHandler {
-	// Register custom validators
 	util.RegisterValidators(v)
 
 	return &RegisterHandler{
@@ -28,7 +25,15 @@ func NewRegisterHandler(registerService ports.RegisterService, v *validator.Vali
 	}
 }
 
-// Register จัดการคำขอลงทะเบียนผู้ใช้ใหม่
+func (h *RegisterHandler) SetupRoutes(router fiber.Router) {
+	users := router.Group("/users")
+	users.Post("/register", h.Register)
+	users.Get("/", h.GetUser)
+	users.Get("/:id", h.GetUserByID)
+	users.Put("/:id", h.UpdateUser)
+	users.Delete("/:id", h.DeleteUser)
+}
+
 func (h *RegisterHandler) Register(c *fiber.Ctx) error {
 	var req dto.RegisterRequest
 	if err := c.BodyParser(&req); err != nil {

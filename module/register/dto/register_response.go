@@ -1,6 +1,5 @@
 package dto
 
-// RegisterResponse คือโครงสร้างข้อมูลตอบกลับหลังการลงทะเบียน
 type RegisterResponse struct {
 	UserID    string `json:"user_id"`
 	Username  string `json:"username"`

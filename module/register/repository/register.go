@@ -6,25 +6,25 @@ import (
 	"time"
 
 	"github.com/Be2Bag/example/model"
+	commonPorts "github.com/Be2Bag/example/module/common/ports"
 	"github.com/Be2Bag/example/module/register/ports"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-// RegisterRepository คือที่เก็บข้อมูลสำหรับการลงทะเบียนผู้ใช้
 type RegisterRepository struct {
 	collection *mongo.Collection
+	sharedRepo commonPorts.SharedRepository
 }
 
-// NewRegisterRepository สร้างที่เก็บข้อมูลใหม่
-func NewRegisterRepository(db *mongo.Database) ports.RegisterRepository {
+func NewRegisterRepository(db *mongo.Database, sharedRepo commonPorts.SharedRepository) ports.RegisterRepository {
 	collection := db.Collection("users")
 	return &RegisterRepository{
 		collection: collection,
+		sharedRepo: sharedRepo,
 	}
 }
 
-// CreateUser สร้างผู้ใช้ใหม่ในฐานข้อมูล
 func (repository *RegisterRepository) CreateUser(user *model.User) error {
 
 	user.CreatedAt = time.Now()
@@ -33,7 +33,6 @@ func (repository *RegisterRepository) CreateUser(user *model.User) error {
 	return err
 }
 
-// GetUserByEmail ดึงข้อมูลผู้ใช้ตามอีเมล
 func (repository *RegisterRepository) GetUserByEmail(email string) (*model.User, error) {
 	var user model.User
 	err := repository.collection.FindOne(context.TODO(), bson.M{"email": email}).Decode(&user)
