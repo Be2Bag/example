@@ -25,13 +25,13 @@ func NewRegisterService(repository registerports.RegisterRepository, cryptoServi
 	}
 }
 
-func (service *RegisterService) Register(req dto.RegisterRequest) (dto.RegisterResponse, error) {
-	existingUser, err := service.repository.GetUserByEmail(req.Email)
+func (s *RegisterService) Register(req dto.RegisterRequest) (dto.RegisterResponse, error) {
+	existingUser, err := s.repository.GetUserByEmail(req.Email)
 	if err == nil && existingUser != nil {
 		return dto.RegisterResponse{}, ErrUserAlreadyExists
 	}
 
-	hashedPassword := service.cryptoService.HasPwHelper(req.Password)
+	hashedPassword := s.cryptoService.HasPwHelper(req.Password)
 
 	user := &model.User{
 		UserID:    uuid.New().String(),
@@ -42,7 +42,7 @@ func (service *RegisterService) Register(req dto.RegisterRequest) (dto.RegisterR
 		LastName:  req.LastName,
 	}
 
-	err = service.repository.CreateUser(user)
+	err = s.repository.CreateUser(user)
 	if err != nil {
 		return dto.RegisterResponse{}, err
 	}
@@ -56,9 +56,9 @@ func (service *RegisterService) Register(req dto.RegisterRequest) (dto.RegisterR
 	}, nil
 }
 
-func (service *RegisterService) GetUsers() ([]dto.RegisterResponse, error) {
+func (s *RegisterService) GetUsers() ([]dto.RegisterResponse, error) {
 
-	users, err := service.repository.GetUsers()
+	users, err := s.repository.GetUsers()
 	if err != nil {
 		return nil, err
 	}
@@ -77,9 +77,9 @@ func (service *RegisterService) GetUsers() ([]dto.RegisterResponse, error) {
 	return responses, nil
 }
 
-func (service *RegisterService) GetUserByID(id string) (dto.RegisterResponse, error) {
+func (s *RegisterService) GetUserByID(id string) (dto.RegisterResponse, error) {
 
-	user, err := service.repository.GetUserByID(id)
+	user, err := s.repository.GetUserByID(id)
 
 	if user == nil {
 		return dto.RegisterResponse{}, ErrUserNotFound
@@ -100,8 +100,8 @@ func (service *RegisterService) GetUserByID(id string) (dto.RegisterResponse, er
 	return responses, nil
 }
 
-func (service *RegisterService) UpdateUser(req dto.UpdateUserRequest) (dto.RegisterResponse, error) {
-	user, err := service.repository.GetUserByID(req.UserID)
+func (s *RegisterService) UpdateUser(req dto.UpdateUserRequest) (dto.RegisterResponse, error) {
+	user, err := s.repository.GetUserByID(req.UserID)
 	if user == nil {
 		return dto.RegisterResponse{}, ErrUserNotFound
 	}
@@ -115,7 +115,7 @@ func (service *RegisterService) UpdateUser(req dto.UpdateUserRequest) (dto.Regis
 	user.FirstName = req.FirstName
 	user.LastName = req.LastName
 
-	err = service.repository.UpdateUser(user)
+	err = s.repository.UpdateUser(user)
 	if err != nil {
 		return dto.RegisterResponse{}, err
 	}
@@ -129,8 +129,8 @@ func (service *RegisterService) UpdateUser(req dto.UpdateUserRequest) (dto.Regis
 	}, nil
 }
 
-func (service *RegisterService) DeleteUser(id string) error {
-	user, err := service.repository.GetUserByID(id)
+func (s *RegisterService) DeleteUser(id string) error {
+	user, err := s.repository.GetUserByID(id)
 	if user == nil {
 		return ErrUserNotFound
 	}
@@ -139,7 +139,7 @@ func (service *RegisterService) DeleteUser(id string) error {
 		return err
 	}
 
-	err = service.repository.DeleteUser(id)
+	err = s.repository.DeleteUser(id)
 	if err != nil {
 		return err
 	}

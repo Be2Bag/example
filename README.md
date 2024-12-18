@@ -7,11 +7,17 @@ GO-EXAMPLE/
 ├── middleware/             # Middleware ที่ใช้ร่วมกันในแอปพลิเคชัน
 ├── model/                  # โครงสร้างข้อมูล (struct) ของแอปพลิเคชัน
 ├── module/
-│   └── register/           # โมดูลสำหรับฟังก์ชันการลงทะเบียน
+│   ├── register/           # โมดูลสำหรับฟังก์ชันการลงทะเบียน
+│   │   ├── dto/            # Data Transfer Objects สำหรับส่งและรับข้อมูล
+│   │   ├── handler/        # Handlers สำหรับการจัดการ HTTP request
+│   │   ├── middleware/     # Middleware เฉพาะของโมดูล register
+│   │   ├── ports/          # Interfaces ของบริการที่ต้องใช้ในโมดูลนี้
+│   │   └── services/       # Business logic ของโมดูล register
+│   └── session/            # โมดูลสำหรับฟังก์ชันการจัดการ session
 │       ├── dto/            # Data Transfer Objects สำหรับส่งและรับข้อมูล
 │       ├── handler/        # Handlers สำหรับการจัดการ HTTP request
-│       ├── middleware/     # Middleware เฉพาะของโมดูล register
+│       ├── middleware/     # Middleware เฉพาะของโมดูล session
 │       ├── ports/          # Interfaces ของบริการที่ต้องใช้ในโมดูลนี้
-│       └── services/       # Business logic ของโมดูล register
+│       └── services/       # Business logic ของโมดูล session
 └── pkg/                    # Utilities, helper functions, และ library ที่ใช้ร่วมกัน
 ```
