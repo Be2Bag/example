@@ -20,6 +20,6 @@ func NewSessionRepository(db *mongo.Database, sharedRepo commonPorts.SharedRepos
 	}
 }
 
-func (r *SessionRepository) GetUserByEmail(email string) (*model.User, error) {
-	return r.sharedRepo.GetUserByEmail(email)
+func (r *SessionRepository) GetUserByEmail(email string) (*model.Staff, error) {
+	return r.sharedRepo.GetStaffByEmail(email)
 }
