@@ -43,7 +43,7 @@ func (h *SessionHandler) Login(c *fiber.Ctx) error {
 	token, err := h.sessionService.Login(sessionRequest)
 	if err != nil {
 		if errors.Is(err, services.ErrInvalidEmail) {
-			return common.SendErrorResponse(c, fiber.StatusUnauthorized, "อีเมล์ไม่ถูกต้อง", nil)
+			return common.SendErrorResponse(c, fiber.StatusUnauthorized, "อีเมลไม่ถูกต้อง", nil)
 		}
 		if errors.Is(err, services.ErrInvalidPassword) {
 			return common.SendErrorResponse(c, fiber.StatusUnauthorized, "รหัสผ่านไม่ถูกต้อง", nil)
@@ -69,10 +69,11 @@ func (h *SessionHandler) Login(c *fiber.Ctx) error {
 	cookie.SameSite = "Strict"
 	c.Cookie(cookie)
 
-	return common.SendSuccessResponse(c, fiber.StatusOK, "Login successful", nil)
+	return common.SendSuccessResponse(c, fiber.StatusOK, "เข้าสู่ระบบสำเร็จ", nil)
 }
 
 func (h *SessionHandler) Session(c *fiber.Ctx) error {
 	auth := c.Locals("auth").(map[string]interface{})
-	return common.SendSuccessResponse(c, fiber.StatusOK, "Session successful", auth)
+	time.Sleep(2 * time.Second)
+	return common.SendSuccessResponse(c, fiber.StatusOK, "ตรวจสอบเซสชันสำเร็จ", auth)
 }

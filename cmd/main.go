@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/Be2Bag/example/config"
+	"github.com/Be2Bag/example/middleware"
 	registerHandler "github.com/Be2Bag/example/module/register/handler"
 	registerPorts "github.com/Be2Bag/example/module/register/ports"
 	registerRepository "github.com/Be2Bag/example/module/register/repository"
@@ -38,6 +39,8 @@ func main() {
 
 	app := fiber.New()
 	setupMiddleware(app)
+
+	app.Use(middleware.ResponseTimeMiddleware)
 
 	apiGroup := app.Group("/api")
 
