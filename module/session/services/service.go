@@ -4,8 +4,8 @@ import (
 	"errors"
 
 	"github.com/Be2Bag/example/module/session/dto"
-	"github.com/Be2Bag/example/module/session/ports"
-	util "github.com/Be2Bag/example/pkg/crypto"
+	sessionports "github.com/Be2Bag/example/module/session/ports"
+	pkgports "github.com/Be2Bag/example/pkg/ports"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -13,12 +13,14 @@ var ErrInvalidEmail = errors.New("อีเมล์ไม่ถูกต้อ�
 var ErrInvalidPassword = errors.New("รหัสผ่านไม่ถูกต้อง")
 
 type SessionService struct {
-	repository ports.SessionRepository
+	repository    sessionports.SessionRepository
+	cryptoService pkgports.CryptoService
 }
 
-func NewSessionService(repository ports.SessionRepository) ports.SessionService {
+func NewSessionService(repository sessionports.SessionRepository, cryptoService pkgports.CryptoService) sessionports.SessionService {
 	return &SessionService{
-		repository: repository,
+		repository:    repository,
+		cryptoService: cryptoService,
 	}
 }
 
@@ -41,7 +43,7 @@ func (s *SessionService) Login(sessionRequest dto.SessionRequest) (string, error
 		"email":  user.Email,
 	}
 
-	token, errToken := util.GenerateJWTToken(data)
+	token, errToken := s.cryptoService.GenerateJWTToken(data)
 
 	if errToken != nil {
 		return "", errToken

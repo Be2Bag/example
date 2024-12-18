@@ -7,7 +7,6 @@ import (
 	"github.com/Be2Bag/example/module/register/dto"
 	"github.com/Be2Bag/example/module/register/ports"
 	"github.com/Be2Bag/example/module/register/services"
-	util "github.com/Be2Bag/example/pkg/validator"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
@@ -18,8 +17,6 @@ type RegisterHandler struct {
 }
 
 func NewRegisterHandler(registerService ports.RegisterService, v *validator.Validate) *RegisterHandler {
-	util.RegisterValidators(v)
-
 	return &RegisterHandler{
 		registerService: registerService,
 		validator:       v,

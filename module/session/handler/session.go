@@ -74,6 +74,5 @@ func (h *SessionHandler) Login(c *fiber.Ctx) error {
 
 func (h *SessionHandler) Session(c *fiber.Ctx) error {
 	auth := c.Locals("auth").(map[string]interface{})
-	time.Sleep(2 * time.Second)
 	return common.SendSuccessResponse(c, fiber.StatusOK, "ตรวจสอบเซสชันสำเร็จ", auth)
 }

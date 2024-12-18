@@ -12,7 +12,8 @@ func AuthMiddleware(c *fiber.Ctx) error {
 		return common.SendErrorResponse(c, fiber.StatusUnauthorized, "ไม่พบ token", nil)
 	}
 
-	data, err := util.ValidateJWTToken(token)
+	cryptoService := util.NewCryptoService()
+	data, err := cryptoService.ValidateJWTToken(token)
 	if err != nil {
 		return common.SendErrorResponse(c, fiber.StatusUnauthorized, "token ไม่ถูกต้อง", nil)
 	}

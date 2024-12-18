@@ -12,11 +12,19 @@ import (
 
 	"time"
 
+	"github.com/Be2Bag/example/pkg/ports"
 	"github.com/golang-jwt/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func Encrypt(data string) (string, error) {
+type cryptoService struct {
+}
+
+func NewCryptoService() ports.CryptoService {
+	return &cryptoService{}
+}
+
+func (c *cryptoService) Encrypt(data string) (string, error) {
 
 	key := os.Getenv("KEY_SECRET")
 
@@ -50,7 +58,7 @@ func Encrypt(data string) (string, error) {
 	return base64.StdEncoding.EncodeToString(encrypted), nil
 }
 
-func Decrypt(data string) (string, error) {
+func (c *cryptoService) Decrypt(data string) (string, error) {
 
 	key := os.Getenv("KEY_SECRET")
 
@@ -92,7 +100,7 @@ func Decrypt(data string) (string, error) {
 	return result, nil
 }
 
-func HasPwHelper(pw string) string {
+func (c *cryptoService) HasPwHelper(pw string) string {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(pw), 10)
 	if err != nil {
 		return "เกิดข้อผิดพลาดในการสร้างรหัสผ่าน"
@@ -100,7 +108,7 @@ func HasPwHelper(pw string) string {
 	return string(hashedPassword)
 }
 
-func GenerateJWTToken(data map[string]interface{}) (string, error) {
+func (c *cryptoService) GenerateJWTToken(data map[string]interface{}) (string, error) {
 
 	claims := jwt.MapClaims{
 		"data": data,
@@ -121,7 +129,7 @@ func GenerateJWTToken(data map[string]interface{}) (string, error) {
 	return tokenString, nil
 }
 
-func ValidateJWTToken(tokenStr string) (map[string]interface{}, error) {
+func (c *cryptoService) ValidateJWTToken(tokenStr string) (map[string]interface{}, error) {
 	secret := os.Getenv("JWT_SECRET")
 	if secret == "" {
 		return nil, errors.New("ไม่พบคีย์ลับ JWT")

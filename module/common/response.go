@@ -21,7 +21,7 @@ func NewResponse(status string, code int, message string, data interface{}) *Res
 		Code:      code,
 		Message:   message,
 		Data:      data,
-		Timestamp: formatter.FormatThaiDate(time.Now().UTC()),
+		Timestamp: formatter.NewFormatterService().FormatThaiDate(time.Now().UTC()),
 	}
 }
 

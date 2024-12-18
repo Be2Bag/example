@@ -14,6 +14,7 @@ import (
 	sessionPorts "github.com/Be2Bag/example/module/session/ports"
 	sessionRepository "github.com/Be2Bag/example/module/session/repository"
 	sessionServices "github.com/Be2Bag/example/module/session/services"
+	util "github.com/Be2Bag/example/pkg/crypto"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -47,13 +48,14 @@ func main() {
 	v := validator.New()
 
 	sharedRepo := registerRepository.NewRegisterRepository(config.DB, nil)
+	cryptoRepo := util.NewCryptoService()
 
 	var registerRepo registerPorts.RegisterRepository = registerRepository.NewRegisterRepository(config.DB, sharedRepo)
-	var registerService registerPorts.RegisterService = registerServices.NewRegisterService(registerRepo)
+	var registerService registerPorts.RegisterService = registerServices.NewRegisterService(registerRepo, cryptoRepo)
 	registerHandler := registerHandler.NewRegisterHandler(registerService, v)
 
 	var sessionRepo sessionPorts.SessionRepository = sessionRepository.NewSessionRepository(config.DB, sharedRepo)
-	var sessionService sessionPorts.SessionService = sessionServices.NewSessionService(sessionRepo)
+	var sessionService sessionPorts.SessionService = sessionServices.NewSessionService(sessionRepo, cryptoRepo)
 	sessionHandler := sessionHandler.NewSessionHandler(sessionService, v)
 
 	registerHandler.SetupRoutes(apiGroup)

@@ -5,8 +5,8 @@ import (
 
 	"github.com/Be2Bag/example/model"
 	"github.com/Be2Bag/example/module/register/dto"
-	"github.com/Be2Bag/example/module/register/ports"
-	util "github.com/Be2Bag/example/pkg/crypto"
+	registerports "github.com/Be2Bag/example/module/register/ports"
+	pkgports "github.com/Be2Bag/example/pkg/ports"
 	"github.com/google/uuid"
 )
 
@@ -14,12 +14,14 @@ var ErrUserAlreadyExists = errors.New("ผู้ใช้มีอยู่แ�
 var ErrUserNotFound = errors.New("ไม่พบผู้ใช้ตาม ID ที่ระบุ")
 
 type RegisterService struct {
-	repository ports.RegisterRepository
+	repository    registerports.RegisterRepository
+	cryptoService pkgports.CryptoService
 }
 
-func NewRegisterService(repository ports.RegisterRepository) ports.RegisterService {
+func NewRegisterService(repository registerports.RegisterRepository, cryptoService pkgports.CryptoService) registerports.RegisterService {
 	return &RegisterService{
-		repository: repository,
+		repository:    repository,
+		cryptoService: cryptoService,
 	}
 }
 
@@ -29,7 +31,7 @@ func (service *RegisterService) Register(req dto.RegisterRequest) (dto.RegisterR
 		return dto.RegisterResponse{}, ErrUserAlreadyExists
 	}
 
-	hashedPassword := util.HasPwHelper(req.Password)
+	hashedPassword := service.cryptoService.HasPwHelper(req.Password)
 
 	user := &model.User{
 		UserID:    uuid.New().String(),
